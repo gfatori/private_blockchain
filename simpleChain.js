@@ -136,6 +136,7 @@ getBlockHeight(){
     }
   }
 
+///// Tests
 let blockchain = new Blockchain();
 
 (function theLoop (i) {
@@ -152,11 +153,5 @@ deleteXBlocks(11)
 async function deleteXBlocks(times) {
   for (var i = 0; i <= times; i++) {
     await db.del(i)
-  }
-}
-
-async function addXBlocks(times) {
-  for (var i = 0; i <= times; i++) {
-    await blockchain.addBlock(new Block("test data "+i));
   }
 }
