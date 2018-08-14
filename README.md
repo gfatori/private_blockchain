@@ -33,29 +33,32 @@ To test code:
 ```
 node
 ```
-3: Copy and paste your code into your node session
-4: Instantiate blockchain with blockchain variable
+3: Copy and paste your code from simple.js (untill //tests)
 ```
 let blockchain = new Blockchain();
 ```
 5: Generate 10 blocks using a for loop
 ```
-for (var i = 0; i <= 10; i++) {
-  blockchain.addBlock(new Block("test data "+i));
+(function theLoop (i) {
+  setTimeout(function () {
+    blockchain.addBlock(new Block("test data "+i));
+    if (--i) theLoop(i);
+  }, 100);
+})(10);
 }
 ```
-6: Validate blockchain
+6: Validate a block
 ```
-blockchain.validateChain();
+blockchain.validateBlock(1);
 ```
-7: Induce errors by changing block data
+WIP - 7: Induce errors by changing block data
 ```
 let inducedErrorBlocks = [2,4,7];
 for (var i = 0; i < inducedErrorBlocks.length; i++) {
   blockchain.chain[inducedErrorBlocks[i]].data='induced chain error';
 }
 ```
-8: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
+WIP - 8: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
 ```
 blockchain.validateChain();
 ```
