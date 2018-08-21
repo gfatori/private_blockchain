@@ -105,7 +105,7 @@ getBlockHeight(){
       });
     })
 }
-	// Get Block
+	// Get Block;
   getBlock(blockHeight) {
     return new Promise((resolve, reject) => {
       db.get(blockHeight, function (err, value) {
@@ -113,7 +113,7 @@ getBlockHeight(){
         })
       })
     }
-		// OFFICIAL
+		// Validate a block;
     async validateBlock(blockHeight){
       let block = null;
       await this.getBlock(blockHeight).then(
@@ -133,33 +133,35 @@ getBlockHeight(){
           }
         });
     }
-		// official
-		async validateChain(){
+	} // Closes blockchain Class
+
+		// Validate Full Chain Function;
+		async function validateChain(){
 			 let errorLog = [];
 			 let chainLenght = 0;
-			 await this.getBlockHeight().then(value => chainLenght = value)
-			 setTimeout(async function () {
+			 await blockchain.getBlockHeight().then(value => chainLenght = value)
+			 setTimeout(await async function () {
 				 for (var i = 0; i < chainLenght; i++) {
-					 await this.validateBlock(i).then(
+					 await blockchain.validateBlock(i).then(
 						 value => {
 							 if (value === true) console.log('valid node \n');
 						 }).catch(
 							 value => {
 								 if (value === false) {
-									 errorLog.push('block #' +i + 'is invalid.')
+									 errorLog.push(i)
 									 console.log('invalid node \n')
 								 }
 							 });
 					 let blockHash = null;
-					 await this.getBlock(i).then(
+					 await blockchain.getBlock(i).then(
 						 value => blockHash = JSON.parse(value).hash
 					 )
 					 let previousHash = null;
-					 await this.getBlock(i+1).then(
+					 await blockchain.getBlock(i+1).then(
 						 value => previousHash = JSON.parse(value).hash
 					 )
 					 if (blockHash!==previousHash) {
-						 errorLog.push('chain broken at (invalid hash sequence)': +i);
+						 errorLog.push(i);
 					 }
 				 }
 			 }, 100);
@@ -169,47 +171,8 @@ getBlockHeight(){
 			 } else {
 				 console.log('No errors detected');
 			 }
+			 return errorLog;
 		}
-
-		// Validate Full Chain Function;
-		//async function validateChain(){
-		//	 let errorLog = [];
-		//	 let chainLenght = 0;
-		//	 await blockchain.getBlockHeight().then(value => chainLenght = value)
-		//	 setTimeout(await async function () {
-		//		 for (var i = 0; i < chainLenght; i++) {
-		//			 await blockchain.validateBlock(i).then(
-		//				 value => {
-		//					 if (value === true) console.log('valid node \n');
-		//				 }).catch(
-		//					 value => {
-		//						 if (value === false) {
-		//							 errorLog.push(i)
-		//							 console.log('invalid node \n')
-		//						 }
-		//					 });
-		//			 let blockHash = null;
-		//			 await blockchain.getBlock(i).then(
-		//				 value => blockHash = JSON.parse(value).hash
-		//			 )
-		//			 let previousHash = null;
-		//			 await blockchain.getBlock(i+1).then(
-		//				 value => previousHash = JSON.parse(value).hash
-		//			 )
-		//			 if (blockHash!==previousHash) {
-		//				 errorLog.push(i);
-		//			 }
-		//		 }
-		//	 }, 100);
-		//	 if (errorLog.length>0) {
-		//		 console.log('Block errors = ' + errorLog.length);
-		//		 console.log('Blocks: '+errorLog);
-		//	 } else {
-		//		 console.log('No errors detected');
-		//	 }
-		//	 return errorLog;
-		}
- // }
 
 /* ===== Testing ==============================================================|
 |                                                                              |
@@ -230,15 +193,15 @@ let blockchain = new Blockchain();
   }, 100);
 })(10);
 
-// Validate Full Chain
-blockchain.validateChain()
+// Validate Full Chain, everything fine.
+validateChain()
 
 // Tamper with a block
 fakeBlocus = new Block("fakestuff")
 addLevelDBData(1, JSON.stringify(fakeBlocus))
 
 // Validate the chain again, and see an error pop:
-blockchain.validateChain()
+validateChain()
 
 // If you want to clean DB and start again :)
 async function deleteXBlocks(times) {
