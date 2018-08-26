@@ -66,7 +66,8 @@ class Blockchain{
 			() => {
 				this.addBlock(new Block("First block in the chain - Genesis block"));
 			})
-  }
+			this.currentHeight = 0
+	}
 // Add new block
 async addBlock(newBlock){
 	// Block Height
@@ -103,7 +104,11 @@ getBlockHeight(){
           console.log('Found block height ' + currentHeight);
           resolve(currentHeight);
       });
-    })
+    }).then(
+			value => this.currentHeight = value;
+		).catch((err) => {
+			console.log('error, couldnt find height.')
+		})
 }
 	// Get Block;
   getBlock(blockHeight) {
@@ -133,16 +138,14 @@ getBlockHeight(){
           }
         });
     }
-	} // Closes blockchain Class
-
 		// Validate Full Chain Function;
-		async function validateChain(){
+		async validateChain(){
 			 let errorLog = [];
 			 let chainLenght = 0;
-			 await blockchain.getBlockHeight().then(value => chainLenght = value)
+			 await this.getBlockHeight().then(value => chainLenght = value)
 			 setTimeout(await async function () {
 				 for (var i = 0; i < chainLenght; i++) {
-					 await blockchain.validateBlock(i).then(
+					 await this.validateBlock(i).then(
 						 value => {
 							 if (value === true) console.log('valid node \n');
 						 }).catch(
@@ -153,11 +156,11 @@ getBlockHeight(){
 								 }
 							 });
 					 let blockHash = null;
-					 await blockchain.getBlock(i).then(
+					 await this.getBlock(i).then(
 						 value => blockHash = JSON.parse(value).hash
 					 )
 					 let previousHash = null;
-					 await blockchain.getBlock(i+1).then(
+					 await this.getBlock(i+1).then(
 						 value => previousHash = JSON.parse(value).hash
 					 )
 					 if (blockHash!==previousHash) {
@@ -173,6 +176,7 @@ getBlockHeight(){
 			 }
 			 return errorLog;
 		}
+	} // Closes blockchain Class
 
 /* ===== Testing ==============================================================|
 |                                                                              |
@@ -194,7 +198,7 @@ let blockchain = new Blockchain();
 })(10);
 
 // Validate Full Chain, everything fine.
-validateChain()
+blockchain.validateChain()
 
 // Tamper with a block
 fakeBlocus = new Block("fakestuff")
