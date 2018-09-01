@@ -66,7 +66,9 @@ class Blockchain{
 			() => {
 				this.addBlock(new Block("First block in the chain - Genesis block"));
 			})
-  }
+			this.currentHeight = 0;
+      this.chain = [];
+	}
 // Add new block
 async addBlock(newBlock){
 	// Block Height
@@ -80,13 +82,14 @@ async addBlock(newBlock){
       value => newBlock.previousBlockHash = JSON.parse(value).hash
     )
   } else if (newBlock.height<=0) {
-    console.log('creating genesis block (?)');
+    console.log('creating genesis block');
   }
 	// New Hash
   newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
 	// New Hash
   console.log(newBlock);
   await addDataToLevelDB(JSON.stringify(newBlock))
+  this.chain.push(newBlock)
 }
 
 // Block Height
@@ -129,51 +132,24 @@ getBlockHeight(){
             console.log('Block #'+blockHeight+' is valid:\n'+blockHash+'=='+validBlockHash);
           } else {
             console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-            reject(false);
+            resolve(false);
           }
         });
     }
-	} // Closes blockchain Class
-
 		// Validate Full Chain Function;
-		async function validateChain(){
+		async validateChain(){
 			 let errorLog = [];
-			 let chainLenght = 0;
-			 await blockchain.getBlockHeight().then(value => chainLenght = value)
-			 setTimeout(await async function () {
-				 for (var i = 0; i < chainLenght; i++) {
-					 await blockchain.validateBlock(i).then(
-						 value => {
-							 if (value === true) console.log('valid node \n');
-						 }).catch(
-							 value => {
-								 if (value === false) {
-									 errorLog.push(i)
-									 console.log('invalid node \n')
-								 }
-							 });
-					 let blockHash = null;
-					 await blockchain.getBlock(i).then(
-						 value => blockHash = JSON.parse(value).hash
-					 )
-					 let previousHash = null;
-					 await blockchain.getBlock(i+1).then(
-						 value => previousHash = JSON.parse(value).hash
-					 )
-					 if (blockHash!==previousHash) {
-						 errorLog.push(i);
-					 }
-				 }
-			 }, 100);
-			 if (errorLog.length>0) {
-				 console.log('Block errors = ' + errorLog.length);
-				 console.log('Blocks: '+errorLog);
-			 } else {
-				 console.log('No errors detected');
-			 }
+       let promises = [];
+       this.chain.forEach(block => {
+         promises.push(this.validateBlock(block.height));
+       })
+       Promise.all(promises).then(results => {
+         results.map(results => console.log(results))
+         results.map(results => errorLog.push(results))
+       });
 			 return errorLog;
 		}
-
+	} // Closes blockchain Class
 /* ===== Testing ==============================================================|
 |                                                                              |
 |  ===========================================================================*/
@@ -194,14 +170,17 @@ let blockchain = new Blockchain();
 })(10);
 
 // Validate Full Chain, everything fine.
-validateChain()
+blockchain.validateChain()
 
 // Tamper with a block
-fakeBlocus = new Block("fakestuff")
+let fakeBlocus = new Block("fakestu3123123 ff223")
 addLevelDBData(1, JSON.stringify(fakeBlocus))
 
+fakeBlocus = new Block("another fake one")
+addLevelDBData(2, JSON.stringify(fakeBlocus))
+
 // Validate the chain again, and see an error pop:
-validateChain()
+blockchain.validateChain()
 
 // If you want to clean DB and start again :)
 async function deleteXBlocks(times) {
