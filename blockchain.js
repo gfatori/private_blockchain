@@ -2,15 +2,18 @@
 |  Learn more: Crypto-js: https://github.com/brix/crypto-js  |
 |  ========================================================= */
 const SHA256 = require('crypto-js/sha256');
-const database = require("./database.js")
+const Database = require("./database.js")
+const database = new Database();
 
 module.exports = class Blockchain {
   constructor() {
-    this.getBlock(0).then(() => {
-      console.log('Genesis already exists.')
-    }).catch(() => {
-      this.addBlock(new Block("First block in the chain - Genesis block"));
-    });
+    async() => {
+      await this.getBlock(0).then(() => {
+        console.log('Genesis already exists.')
+      }).catch(() => {
+        this.addBlock(new Block("First block in the chain - Genesis block"));
+      });
+    }
   }
   // Add new block
   async addBlock(newBlock) {
