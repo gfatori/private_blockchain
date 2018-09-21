@@ -2,73 +2,51 @@
 |  Learn more: Crypto-js: https://github.com/brix/crypto-js  |
 |  ========================================================= */
 const SHA256 = require('crypto-js/sha256');
+const Database = require("./database.js");
+const database = new Database();
+const Block = require("./block.js");
 
-/* ===== Block Class ==============================
-|  Class with a constructor for block 			   |
-|  =============================================== */
-
-class Block {
-  constructor(data) {
-    this.hash = "",
-    this.height = 0,
-    this.body = data,
-    this.time = 0,
-    this.previousBlockHash = ""
-  }
-}
-
-/* ===== Blockchain Class ==========================
-|  Class with a constructor for new blockchain 		|
-|  ================================================ */
-
-class Blockchain {
+module.exports = class Blockchain {
   constructor() {
-    this.getBlock(0).then(() => {
-      console.log('Genesis already exists.')
-    }).catch(() => {
-      this.addBlock(new Block("First block in the chain - Genesis block"));
-    });
+      this.getBlock(1).then(() => {
+        console.log('Genesis already exists.')
+      }).catch((err) => {
+        console.log(err)
+        this.addBlock(new Block("First block in the chain - Genesis block"));
+      });
   }
   // Add new block
   async addBlock(newBlock) {
     // Block Height
-    newBlock.height = await this.getBlockHeight().then(value => newBlock.height = value + 1);
+    newBlock.height = await this.getBlockHeight()
+    .then(value => newBlock.height = value + 1)
+    .catch(() => console.log("error, couldn't find block height"));
     console.log('The block being created is number #' + newBlock.height + '\n');
     // Block Time
     newBlock.time = new Date().getTime().toString().slice(0, -3);
     // Previous Hash if Exists.
-    if (newBlock.height >= 1) {
+    if (newBlock.height > 1) {
       await this.getBlock(newBlock.height - 1).then(value => newBlock.previousBlockHash = JSON.parse(value).hash);
-    } else if (newBlock.height <= 0) {
+    } else if (newBlock.height <= 1) {
       console.log('creating genesis block');
     }
     // New Hash
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
     // New Block added
     console.log(newBlock);
-    await addDataToLevelDB(JSON.stringify(newBlock));
+    await database.addLevelDBData(newBlock.height, JSON.stringify(newBlock));
+    return newBlock;
   }
 
   // Block Height
   async getBlockHeight() {
-    let height = 0;
-    return new Promise((resolve, reject) => {
-      db.createReadStream().on('data', function(data) {
-        height++;
-      }).on('error', function(err) {
-        return console.log('Unable to get block height', err);
-        reject(err);
-      }).on('close', function() {
-        height = height - 1
-        console.log('Found block height ' + height);
-        resolve(height);
-      });
-    })
+    return await database.countLevelDBData();
   }
   // Get Block;
   async getBlock(blockHeight) {
     return new Promise((resolve, reject) => {
-      db.get(blockHeight, function(err, value) {
+      database.getLevelDBData(blockHeight, function(err, value) {
+        console.log(err,value);
         err != null
           ? reject(err)
           : resolve(value);
@@ -116,9 +94,9 @@ class Blockchain {
     });
       chainLog.forEach(result => {
         if (result[0] == true) {
-          console.log('ASAS Block #' + result[1] + "is valid.\n");
+          console.log('Block #' + result[1] + "is valid.\n");
         } else {
-          console.log('ASAS Block #' + result[1] + "is invalid.\n");
+          console.log('Block #' + result[1] + "is invalid.\n");
         }
       });
     if (errorLog.length > 0) {
@@ -130,48 +108,3 @@ class Blockchain {
     }
   }
 }
-
-/* ===== Testing ==============================================================|
-|                                                                              |
-|  =========================================================================== */
-//First copy and paste in your node console the whole code above the Testing comment.
-
-// Now follow theses steps:
-
-// Create Blockchain;
-let blockchain = new Blockchain();
-
-// Populate the chain with 10 valid blocks;
-(function theLoop(i) {
-  setTimeout(function() {
-    blockchain.addBlock(new Block("test data " + i));
-    if (--i)
-      theLoop(i);
-    }
-  , 100);
-})(10);
-
-// Validate Full Chain, everything fine.
-blockchain.validateChain()
-
-// Tamper with some blocks
-let fakeBlocus = new Block("fakestu3123123 ff223")
-fakeBlocus.hash = 'fake hash here'
-fakeBlocus.previousBlockHash = 'broken previousHash'
-addLevelDBData(1, JSON.stringify(fakeBlocus))
-
-fakeBlocus = new Block("another fake one")
-fakeBlocus.previousBlockHash = 'another broken previousHash'
-addLevelDBData(5, JSON.stringify(fakeBlocus))
-
-// Validate the chain again, and see an error pop:
-blockchain.validateChain()
-
-// If you want to clean DB and start again :)
-async function deleteXBlocks(times) {
-  for (var i = 0; i <= times; i++) {
-    await db.del(i)
-  }
-}
-
-deleteXBlocks(10)
