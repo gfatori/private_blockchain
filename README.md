@@ -12,53 +12,22 @@ Installing Node and NPM is pretty straightforward using the installer package av
 
 ### Configuring your project
 
-- Use NPM to initialize your project and create package.json to store project dependencies.
+- Use NPM to initialize your project and download the project dependencies.
 ```
-npm init
-```
-- Install crypto-js with --save flag to save dependency to our package.json file
-```
-npm install crypto-js --save
-```
-- Install level with --save flag
-```
-npm install level --save
+npm install
 ```
 
-## Testing
+### Express.js 
 
-To test code:
-1: Open a command prompt or shell terminal after install node.js.
-2: Enter a node session, also known as REPL (Read-Evaluate-Print-Loop).
+Express.js is the API framework used in the project.
+
+
+### Running the API Server
+
+To run the api server:
+
 ```
-node
+node app.js
 ```
-3: Copy and paste your code from simple.js (untill //tests)
-```
-let blockchain = new Blockchain();
-```
-5: Generate 10 blocks using a for loop
-```
-(function theLoop (i) {
-  setTimeout(function () {
-    blockchain.addBlock(new Block("test data "+i));
-    if (--i) theLoop(i);
-  }, 100);
-})(10);
-}
-```
-6: Validate a block
-```
-blockchain.validateBlock(1);
-```
-WIP - 7: Induce errors by changing block data
-```
-let inducedErrorBlocks = [2,4,7];
-for (var i = 0; i < inducedErrorBlocks.length; i++) {
-  blockchain.chain[inducedErrorBlocks[i]].data='induced chain error';
-}
-```
-WIP - 8: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
-```
-blockchain.validateChain();
-```
+
+It will run on port 8000, on the adress: localhost:8000/

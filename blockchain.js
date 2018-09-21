@@ -2,47 +2,51 @@
 |  Learn more: Crypto-js: https://github.com/brix/crypto-js  |
 |  ========================================================= */
 const SHA256 = require('crypto-js/sha256');
-const Database = require("./database.js")
+const Database = require("./database.js");
 const database = new Database();
+const Block = require("./block.js");
 
 module.exports = class Blockchain {
   constructor() {
-    async() => {
-      await this.getBlock(0).then(() => {
+      this.getBlock(1).then(() => {
         console.log('Genesis already exists.')
-      }).catch(() => {
+      }).catch((err) => {
+        console.log(err)
         this.addBlock(new Block("First block in the chain - Genesis block"));
       });
-    }
   }
   // Add new block
   async addBlock(newBlock) {
     // Block Height
-    newBlock.height = await this.getBlockHeight().then(value => newBlock.height = value + 1);
+    newBlock.height = await this.getBlockHeight()
+    .then(value => newBlock.height = value + 1)
+    .catch(() => console.log("error, couldn't find block height"));
     console.log('The block being created is number #' + newBlock.height + '\n');
     // Block Time
     newBlock.time = new Date().getTime().toString().slice(0, -3);
     // Previous Hash if Exists.
-    if (newBlock.height >= 1) {
+    if (newBlock.height > 1) {
       await this.getBlock(newBlock.height - 1).then(value => newBlock.previousBlockHash = JSON.parse(value).hash);
-    } else if (newBlock.height <= 0) {
+    } else if (newBlock.height <= 1) {
       console.log('creating genesis block');
     }
     // New Hash
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
     // New Block added
     console.log(newBlock);
-    await database.addDataToLevelDB(JSON.stringify(newBlock));
+    await database.addLevelDBData(newBlock.height, JSON.stringify(newBlock));
+    return newBlock;
   }
 
   // Block Height
   async getBlockHeight() {
-    database.countLevelDBData();
+    return await database.countLevelDBData();
   }
   // Get Block;
   async getBlock(blockHeight) {
     return new Promise((resolve, reject) => {
       database.getLevelDBData(blockHeight, function(err, value) {
+        console.log(err,value);
         err != null
           ? reject(err)
           : resolve(value);
