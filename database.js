@@ -39,7 +39,6 @@
         return console.log('Unable to get block height', err);
         reject(err);
       }).on('close', function() {
-        height = height - 1
         console.log('Found block height ' + height);
         resolve(height);
       });
