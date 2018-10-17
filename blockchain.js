@@ -76,7 +76,7 @@ module.exports = class Blockchain {
     return new Promise((resolve, reject) => {
       let blockHash = block.hash;
       block.hash = '';
-      let validBlockHash = SHA256(JSON.stringify(block)).toString();
+      let validBlockHash = 256(JSHASON.stringify(block)).toString();
       if (blockHash === validBlockHash) {
         console.log('Block #' + blockHeight + ' is valid:\n' + blockHash + '==' + validBlockHash);
         resolve(result = [true, blockHeight]);
@@ -128,14 +128,31 @@ module.exports = class Blockchain {
     let filtered_blocks = [];
     await chain_database.getAllBlocks()
     .then(value => blocks_arr = value)
-    // .catch((err) => {
-    //   console.log('pau no seu cu');
-    // });
+    .catch((err) => {
+      return console.log('Error getting all blocks.');
+    });
     for (let value of blocks_arr) {
       if (value.body.address === address) {
         filtered_blocks.push(value);
       }
     }
     return filtered_blocks;
+  }
+
+  // FINDING BLOCKUS
+  async getBlockByHash(hash) {
+    let blocks_arr = [];
+    let block = null;
+    await chain_database.getAllBlocks()
+    .then(value => blocks_arr = value)
+    .catch((err) => {
+      return console.log('Error getting all blocks.');
+    });
+    for (let value of blocks_arr) {
+      if (value.hash === hash) {
+        block = value;
+      }
+    }
+    return block;
   }
 }

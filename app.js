@@ -35,6 +35,21 @@ app.get("/block/:id", function (req, res) {
     })
 })
 
+app.get("/stars/address::address", async function (req, res) {
+  if (!req.params.address) {
+    return res.status(422).json({ errors: { address: "cannot be blank" } });
+  }
+  let response = await blockchain.getBlocksByAddress(req.params.address)
+  res.status(200).json(response);
+})
+
+app.get("/stars/hash::hash", async function (req, res) {
+  if (!req.params.hash) {
+    return res.status(422).json({ errors: { hash: "cannot be blank" } });
+  }
+  let response = await blockchain.getBlockByHash(req.params.hash)
+  res.status(200).json(response);
+})
 // Create Block/Star
 app.post("/block", async function (req, res) {
   if (!req.body.address) {
@@ -121,28 +136,6 @@ app.post("/message-signature/validate", async function (req, res) {
     return res.status(422).json({ errors: { signature: "Your signature doesn't match. Please try again with correct signature." } })
   }
 })
-
-app.get("/stars/address::add", async function (req, res) {
-  let bolovo = await blockchain.getBlocksByAddress(req.params.add)
-    // if (value.body.address === req.params.add) {
-    //   console.log('Batata = ' + value)
-    // }
-  // }
-  res.json(bolovo);
-  
-  //  .then(function (result) {
-  //    res.json(JSON.parse(result));
-   // })
-   // .catch(function (result) {
-    //  return res.status(404).json({ errors: { address: "Embostelou." } })
-   // })
-})
-
-
-// app.post("/cleandb", async function (req, res) {
-//   await blockchain.cleanChain();
-//   res.status(200);
-//})
 
 // Error Handlers
 // 404
