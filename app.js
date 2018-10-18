@@ -18,11 +18,11 @@ app.use(bodyParser.json());
 
 
 // Log request parameters
-app.use('/block/:id', async function (req, res, next) {
-  console.log('Request Type:', req.method);
-  console.log('Parameters: ' + req.params.id);
-  next();
-})
+// app.use('/block/:id', async function (req, res, next) {
+//   console.log('Request Type:', req.method);
+//   console.log('Parameters: ' + req.params.id);
+//   next();
+// })
 
 // Get Block by ID (height)
 app.get("/block/:id", function (req, res) {
@@ -66,15 +66,15 @@ app.post("/block", async function (req, res) {
   }
   // validates if address signature is valid.
   await blockchainIDValidation.is_address_signed(req.body.address)
-  .then(value => signature = value)
-  .catch(value => signature = value)
+    .then(value => signature = value)
+    .catch(value => signature = value)
   if (!signature) {
     return res.status(422).json({ errors: { address: "This address didnt sign a message. Please start the validation process." } })
   }
   let star = new Star(req.body.star.dec, req.body.star.ra, req.body.star.story, req.body.star.mag, req.body.star.constellation);
-  var body =  {
+  var body = {
     "address": req.body.address,
-     star
+    star
   }
   let blockus = new Block(body);
   let json_block = null;
