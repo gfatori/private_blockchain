@@ -64,7 +64,7 @@ module.exports = class BlockchainIDValidation {
     async remove_validation_status(address) {
         await api_database.deleteLevelDBData(address);
     }
-
+    // Returns false if didnt find, returns null if found but not able to register.
     async is_address_signed(address) {
         let validation = null
         await this.get_validation_status(address)

@@ -7,6 +7,8 @@ module.exports = class Star {
       this.dec = dec,
       this.mag = mag,
       this.story = Buffer.from(story, 'ascii').toString('hex'),
+      // Added because of code-review. Not originally asked on project rubric examples.
+      this.storyDecoded = this.decode_story(),
       this.constelation = constelation
   }
 

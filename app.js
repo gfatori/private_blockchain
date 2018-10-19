@@ -63,6 +63,8 @@ app.post("/block", async function (req, res) {
   }
   if (!req.body.star.story) {
     return res.status(422).json({ errors: { story: "cannot be blank" } })
+  } else if (req.body.star.story.length > 250) {
+    return res.status(422).json({ errors: { story: "Should have maximum 250 characters or 500 bytes." } })
   }
   // validates if address signature is valid.
   await blockchainIDValidation.is_address_signed(req.body.address)
@@ -81,6 +83,8 @@ app.post("/block", async function (req, res) {
   await blockchain.addBlock(blockus)
     .then(value => json_block = value)
     .catch();
+  // Resets validation status, as asked by code-review, a new star requires a new validation.
+  await blockchainIDValidation.remove_validation_status(req.body.address);
   res.status(201).json(json_block);
 })
 
@@ -120,14 +124,14 @@ app.post("/message-signature/validate", async function (req, res) {
   }
 
   let message = await blockchainIDValidation.create_message(req.body.address, signature_status.status.requestTimeStamp);
-  var keyPair = bitcoin.ECPair.fromWIF(req.body.address)
-  var privateKey = keyPair.privateKey;
-  var signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed)
-
+  // var keyPair = bitcoin.ECPair.fromWIF(req.body.address)
+  // var privateKey = keyPair.privateKey;
+  // just in case.
+  // var signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed)
+  var isValid = bitcoinMessage.verify(message, req.body.address, req.body.signature);
   console.log('User sent: ' + req.body.signature);
-  console.log('Should be: ' + signature.toString('base64'));
 
-  if (req.body.signature === signature.toString('base64')) {
+  if (isValid) {
     signature_status.registerStar = true;
     signature_status.status.messageSignature = "valid"
     blockchainIDValidation.create_validation_status(req.body.address, JSON.stringify(signature_status));
