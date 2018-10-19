@@ -124,10 +124,6 @@ app.post("/message-signature/validate", async function (req, res) {
   }
 
   let message = await blockchainIDValidation.create_message(req.body.address, signature_status.status.requestTimeStamp);
-  // var keyPair = bitcoin.ECPair.fromWIF(req.body.address)
-  // var privateKey = keyPair.privateKey;
-  // just in case.
-  // var signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed)
   var isValid = bitcoinMessage.verify(message, req.body.address, req.body.signature);
   console.log('User sent: ' + req.body.signature);
 
