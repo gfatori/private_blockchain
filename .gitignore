@@ -5,3 +5,6 @@ chaindata/
 .ldb
 node_modules
 chaindata
+apidata
+api_db
+.vscode
